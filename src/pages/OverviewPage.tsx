@@ -1,5 +1,4 @@
 import { Activity, ArrowLeftRight, ArrowRight, ArrowUpRight, Check, Gauge, History, Info, RadioTower, ShieldCheck, Smartphone, Zap } from 'lucide-react';
-import PageTitle from '../components/PageTitle';
 import type { Reading, View } from '../types';
 type Props = { readings: Reading[]; online: boolean; installed: boolean; onNavigate: (view: View) => void; onInstall: () => void; onToast: (message: string) => void };
 export default function OverviewPage({ readings, online, installed, onNavigate, onInstall, onToast }: Props) {
