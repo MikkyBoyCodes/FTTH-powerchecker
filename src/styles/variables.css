@@ -1,0 +1,16 @@
+/* RX Guard — Design tokens */
+:root {
+  --bg: #090d12;
+  --panel: #10161e;
+  --border: #202b38;
+  --text: #e8edf5;
+  --muted: #8290a1;
+  --green: #5ce1a1;
+  --warning: #f2c078;
+  --font-head: 'Manrope', 'DM Sans', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
