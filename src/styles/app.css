@@ -2931,6 +2931,12 @@ button:disabled {
   gap: 12px;
   margin-bottom: 32px;
 }
+.landing-install-hint {
+  margin: -20px 0 26px;
+  color: #8aa0bc;
+  font-size: 12px;
+  line-height: 1.6;
+}
 .landing-benefits {
   display: flex;
   flex-wrap: wrap;

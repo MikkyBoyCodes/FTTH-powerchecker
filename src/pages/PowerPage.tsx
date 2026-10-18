@@ -87,10 +87,10 @@ const PowerPage = (p: Props) => {
             const characteristics = await service.getCharacteristics();
             for (const char of characteristics) {
               if (char.properties.notify || char.properties.indicate) {
-                char.addEventListener('characteristicvaluechanged', (event: Event) => {
-                  const target = event.target as DataView;
-                  if (target && target.buffer) {
-                    const bytes = new Uint8Array(target.buffer);
+                char.addEventListener('characteristicvaluechanged', () => {
+                  const value = char.value;
+                  if (value) {
+                    const bytes = new Uint8Array(value.buffer);
                     let raw = '';
                     for (const b of bytes) raw += String.fromCharCode(b);
                     setBtRaw(raw.trim());

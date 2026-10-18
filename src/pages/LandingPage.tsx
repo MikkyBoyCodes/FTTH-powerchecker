@@ -80,6 +80,11 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
                 Open full app
               </button>
             </div>
+            {!isStandalone && !canInstall && (
+              <p className="landing-install-hint">
+                No one-tap install here — on iPhone or iPad, tap Share → Add to Home Screen.
+              </p>
+            )}
             <div className="landing-benefits">
               <div className="landing-benefit">
                 <ShieldCheck size={16} />
