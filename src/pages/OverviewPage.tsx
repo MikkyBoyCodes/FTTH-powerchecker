@@ -51,11 +51,11 @@ const tools = [
     link: 'Locate fault',
   },
   {
-    id: 'bluetooth' as View,
+    id: 'power' as View,
     icon: Bluetooth,
     title: 'Bluetooth smart test',
-    desc: 'Read live dBm from a connected optical meter over Bluetooth.',
-    link: 'Connect meter',
+    desc: 'Type a reading or capture live dBm from a meter over Bluetooth.',
+    link: 'Open power checker',
   },
   {
     id: 'inventory' as View,

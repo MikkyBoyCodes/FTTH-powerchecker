@@ -8,9 +8,8 @@ The app opens on a landing page with a download call-to-action. The full workspa
 
 - **Landing page:** advertising, feature highlights and a download/install CTA for every phone and browser.
 - **Overview:** workspace dashboard, recent readings, tool launcher, connection and install status.
-- **Power check:** enter a received dBm reading and get an immediate, plain-language interpretation in the same panel, stacked above the inputs. Save results to local history.
+- **Power check:** type a received dBm reading or capture it live over Bluetooth, then get an immediate plain-language interpretation. Save results to local history.
 - **Unit converter:** dBm → watts (with formula) and kilometres ↔ metres (with formulas).
-- **Bluetooth smart test:** pair with an optical power meter, OTDR or VFL over Web Bluetooth and capture live dBm readings.
 - **Fault locator:** enter power, LOS status and test point to isolate a break without climbing twice.
 - **Inventory & GIS:** digital as-built for poles, joint boxes, splitters, OLTs and customers, with search, filtering and GPS tagging.
 - **One-click provisioning:** activate a new subscriber in a single guided flow — port selection, ONT registration, VLAN assignment and verification.

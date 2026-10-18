@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ArrowLeftRight,
-  Bluetooth,
   Boxes,
   BriefcaseBusiness,
   Building2,
@@ -31,7 +30,6 @@ import LandingPage from './pages/LandingPage';
 import OverviewPage from './pages/OverviewPage';
 import PowerPage from './pages/PowerPage';
 import ConverterPage from './pages/ConverterPage';
-import BluetoothPage from './pages/BluetoothPage';
 import InventoryPage from './pages/InventoryPage';
 import ProvisioningPage from './pages/ProvisioningPage';
 import MttrPage from './pages/MttrPage';
@@ -113,7 +111,6 @@ const navItems: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: House, group: 'WORKSPACE' },
   { id: 'power', label: 'Power check', icon: Gauge, group: 'FIELD TOOLS' },
   { id: 'converter', label: 'Unit converter', icon: ArrowLeftRight, group: 'FIELD TOOLS' },
-  { id: 'bluetooth', label: 'Bluetooth test', icon: Bluetooth, group: 'FIELD TOOLS' },
   { id: 'fault', label: 'Fault locator', icon: SignalLow, group: 'FIELD TOOLS' },
   { id: 'inventory', label: 'Inventory & GIS', icon: Map, group: 'OPERATIONS' },
   { id: 'provisioning', label: 'Provisioning', icon: Zap, group: 'OPERATIONS' },
@@ -295,20 +292,6 @@ const App = () => {
     go('history');
   };
 
-  const saveBluetoothReading = useCallback(
-    (value: number, label: string, status: string) => {
-      const item: Reading = {
-        id: Date.now(),
-        value,
-        label,
-        date: new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }),
-        status,
-      };
-      setReadings((current) => [item, ...current]);
-    },
-    []
-  );
-
   const clearReadings = () => {
     setReadings([]);
     setToast('Local reading history cleared.');
@@ -474,12 +457,10 @@ const App = () => {
               siteName={siteName}
               setSiteName={setSiteName}
               onSave={saveReading}
+              onToast={onToast}
             />
           )}
           {view === 'converter' && <ConverterPage />}
-          {view === 'bluetooth' && (
-            <BluetoothPage onSave={saveBluetoothReading} onToast={onToast} />
-          )}
           {view === 'fault' && <FaultPage />}
           {view === 'inventory' && <InventoryPage />}
           {view === 'provisioning' && <ProvisioningPage onToast={onToast} />}
