@@ -141,6 +141,7 @@ const App = () => {
   const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(ua);
   const isIos =
     /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(ua);
   const isFirefox = /Firefox|FxiOS/i.test(ua);
   const isMacSafari =
     /Macintosh/i.test(ua) && /Safari/i.test(ua) && !/Chrome|Chromium|Edg|OPR|Firefox/i.test(ua);
@@ -420,6 +421,30 @@ const App = () => {
         <li>Open this link in Chrome or Edge (Safari on a Mac).</li>
         <li>
           Use that browser&apos;s <strong>Install</strong> option.
+        </li>
+      </ol>
+    </div>
+  ) : isAndroid ? (
+    <div className="install-steps">
+      <p>
+        <strong>On Android — use Chrome</strong>
+      </p>
+      <ol>
+        <li>
+          Open this link in the <strong>Chrome</strong> app itself — not inside WhatsApp,
+          Facebook, Instagram, Gmail or any other app&apos;s built-in browser.
+        </li>
+        <li>
+          In Chrome tap <strong>⋮</strong> and make sure <strong>Desktop site</strong> is turned
+          OFF, then reload the page.
+        </li>
+        <li>
+          Tap <strong>⋮</strong> again and choose <strong>Install app</strong>.
+        </li>
+        <li>
+          If you only see <strong>Add to Home screen</strong> (or &ldquo;Add to desktop&rdquo;),
+          Chrome found an older shortcut. Long-press that icon, choose{' '}
+          <strong>Uninstall</strong> / <strong>Remove</strong>, then try step 3 again.
         </li>
       </ol>
     </div>
