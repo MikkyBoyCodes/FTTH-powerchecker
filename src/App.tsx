@@ -18,6 +18,7 @@ import {
   Settings2,
   Shield,
   SignalLow,
+  Smartphone,
   Timer,
   Wifi,
   X,
@@ -136,7 +137,13 @@ const navItems: NavItem[] = [
 
 const App = () => {
   const launchedStandalone = isStandaloneMode();
-  const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+  const ua = window.navigator.userAgent;
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(ua);
+  const isIos =
+    /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isFirefox = /Firefox|FxiOS/i.test(ua);
+  const isMacSafari =
+    /Macintosh/i.test(ua) && /Safari/i.test(ua) && !/Chrome|Chromium|Edg|OPR|Firefox/i.test(ua);
   const [showLanding, setShowLanding] = useState(!launchedStandalone);
   const [loading, setLoading] = useState(launchedStandalone);
   const [loadingStep, setLoadingStep] = useState(0);
@@ -156,6 +163,7 @@ const App = () => {
   const [installed, setInstalled] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
   const [standalone, setStandalone] = useState(isStandaloneMode);
+  const [installGuideOpen, setInstallGuideOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -285,31 +293,24 @@ const App = () => {
   }, [launchedStandalone]);
 
   const installApp = async () => {
-    if (standalone || installed) {
-      setToast(
-        'FIBERLINKGUARD is already installed on this device — open it from your apps or Start menu.'
-      );
+    if (standalone) {
+      setToast('FIBERLINKGUARD is already running as the installed app.');
       return;
     }
     if (!installPrompt) {
-      setToast(
-        'Your browser controls install. Click the install icon in the address bar, or open the menu and choose Install app.'
-      );
+      setInstallGuideOpen(true);
       return;
     }
     try {
       await installPrompt.prompt();
       const choice = await installPrompt.userChoice;
       if (choice.outcome === 'accepted') {
-        setInstalled(true);
-        setToast('Installation accepted. FIBERLINKGUARD is installed.');
+        setToast('Installing FIBERLINKGUARD — the app icon will appear on your device.');
       } else {
-        setToast('Installation cancelled; you can install FIBERLINKGUARD later.');
+        setToast('Installation cancelled; you can install FIBERLINKGUARD any time.');
       }
     } catch {
-      setToast(
-        'Your browser controls install. Click the install icon in the address bar, or open the menu and choose Install app.'
-      );
+      setInstallGuideOpen(true);
       return;
     } finally {
       setInstallPrompt(null);
@@ -377,6 +378,104 @@ const App = () => {
         </div>
   ) : null;
 
+  const installSteps = isIos ? (
+    <div className="install-steps">
+      <p>
+        <strong>On iPhone or iPad — use Safari</strong>
+      </p>
+      <ol>
+        <li>Open this link in Safari.</li>
+        <li>
+          Tap the <strong>Share</strong> button.
+        </li>
+        <li>
+          Choose <strong>Add to Home Screen</strong>.
+        </li>
+        <li>
+          Turn on <strong>Open as Web App</strong> and tap <strong>Add</strong>.
+        </li>
+      </ol>
+    </div>
+  ) : isMacSafari ? (
+    <div className="install-steps">
+      <p>
+        <strong>On this Mac — use Safari</strong>
+      </p>
+      <ol>
+        <li>Open this link in Safari.</li>
+        <li>
+          From the menu bar choose <strong>File → Add to Dock</strong>.
+        </li>
+        <li>
+          Click <strong>Add</strong> — FIBERLINKGUARD appears in Launchpad.
+        </li>
+      </ol>
+    </div>
+  ) : isFirefox ? (
+    <div className="install-steps">
+      <p>
+        <strong>Firefox cannot install web apps as apps.</strong>
+      </p>
+      <ol>
+        <li>Open this link in Chrome or Edge (Safari on a Mac).</li>
+        <li>
+          Use that browser&apos;s <strong>Install</strong> option.
+        </li>
+      </ol>
+    </div>
+  ) : (
+    <div className="install-steps">
+      <p>
+        <strong>In Chrome or Edge</strong>
+      </p>
+      <ol>
+        <li>
+          Open this link in <strong>Chrome</strong> or <strong>Edge</strong>.
+        </li>
+        <li>
+          Click the <strong>install icon</strong> in the address bar, or open the{' '}
+          <strong>⋮ / ⋯ menu</strong>.
+        </li>
+        <li>
+          Choose <strong>Install app</strong> and confirm.
+        </li>
+      </ol>
+    </div>
+  );
+
+  const installGuideEl = installGuideOpen ? (
+    <div
+      className="install-guide-backdrop"
+      role="presentation"
+      onClick={() => setInstallGuideOpen(false)}
+    >
+      <section
+        className="install-guide-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="install-guide-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          className="install-guide-close icon-button"
+          aria-label="Close install instructions"
+          onClick={() => setInstallGuideOpen(false)}
+        >
+          <X size={18} />
+        </button>
+        <div className="install-guide-symbol">
+          <Smartphone size={25} />
+        </div>
+        <p className="eyebrow">FIBERLINKGUARD / INSTALLATION</p>
+        <h2 id="install-guide-title">Install FIBERLINKGUARD</h2>
+        {installSteps}
+        <button className="primary-button full-button" onClick={() => setInstallGuideOpen(false)}>
+          Got it
+        </button>
+      </section>
+    </div>
+  ) : null;
+
   if (showLanding) {
     return (
       <>
@@ -387,6 +486,7 @@ const App = () => {
           standalone={standalone}
         />
         {toastEl}
+        {installGuideEl}
       </>
     );
   }
@@ -487,10 +587,10 @@ const App = () => {
               <span className={online ? 'online-dot' : 'offline-dot'} />
               <span>{online ? 'Online ready' : 'Offline mode'}</span>
             </div>
-            {!(installed || standalone) && (
+            {!standalone && (
               <button className="install-app-button" onClick={installApp}>
                 <Download size={15} />
-                <span>{installPrompt ? 'Install app' : 'Install options'}</span>
+                <span>{installPrompt ? 'Install app' : 'Install'}</span>
               </button>
             )}
             <button
@@ -610,6 +710,8 @@ const App = () => {
           </button>
         </div>
       )}
+
+      {installGuideEl}
 
       {aboutOpen && (
         <div className="install-guide-backdrop" role="presentation" onClick={() => setAboutOpen(false)}>

@@ -1,4 +1,4 @@
-import { ArrowDownToLine, Check, Download, WifiOff, Zap } from 'lucide-react';
+import { ArrowDownToLine, Download, WifiOff, Zap } from 'lucide-react';
 import Logo from '../components/Logo';
 
 type Props = {
@@ -9,8 +9,7 @@ type Props = {
 };
 
 export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Props) => {
-  const isStandalone = installed || standalone;
-  const alreadyInstalled = installed && !standalone;
+  const showDownload = !standalone;
 
   const handleInstall = async () => {
     await onInstall();
@@ -33,11 +32,13 @@ export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Pr
           </div>
         </div>
         <div className="landing-actions">
-          <button className="landing-secondary-btn" onClick={handleEnter}>Open App</button>
-          {!isStandalone && (
+          <button className="landing-secondary-btn" onClick={handleEnter}>
+            Open App
+          </button>
+          {showDownload && (
             <button className="landing-primary-btn" onClick={handleInstall}>
-              {alreadyInstalled ? <Check size={18} /> : <Download size={18} />}
-              {alreadyInstalled ? 'Already installed' : 'Download App'}
+              <Download size={18} />
+              Download App
             </button>
           )}
         </div>
@@ -56,13 +57,15 @@ export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Pr
               Fix Fibre Faster.
             </h1>
             <p className="landing-subtitle">
-              FIBERLINKGUARD is a Progressive Web App built for FTTH field teams. Manage network inventory, provision connections, test with smart tools, and resolve faults faster — all in one app.
+              FIBERLINKGUARD is a Progressive Web App built for FTTH field teams. Manage network
+              inventory, provision connections, test with smart tools, and resolve faults faster —
+              all in one app.
             </p>
             <div className="landing-cta-group">
-              {!isStandalone && (
+              {showDownload && (
                 <button className="landing-primary-btn large" onClick={handleInstall}>
-                  {alreadyInstalled ? <Check size={20} /> : <ArrowDownToLine size={20} />}
-                  {alreadyInstalled ? 'Already installed on this device' : 'Download for your device'}
+                  <ArrowDownToLine size={20} />
+                  Download for your device
                 </button>
               )}
               <button className="landing-secondary-btn large" onClick={handleEnter}>
@@ -70,10 +73,10 @@ export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Pr
                 Open full app
               </button>
             </div>
-            {alreadyInstalled && (
+            {installed && (
               <p className="landing-install-hint">
                 FIBERLINKGUARD is already installed on this device. Open it from your apps or Start
-                menu — you don’t need to download it again.
+                menu — no need to download it again.
               </p>
             )}
             <div className="landing-benefits">
@@ -87,7 +90,7 @@ export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Pr
               </div>
               <div className="landing-benefit">
                 <Download size={16} />
-                <span>Installable on all phones & browsers</span>
+                <span>Installable on phones, tablets & desktop</span>
               </div>
             </div>
           </div>
@@ -126,9 +129,9 @@ export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Pr
         <section className="landing-install">
           <h2 className="landing-section-title">Works on every device</h2>
           <p className="landing-install-note">
-            One download for the whole team — FIBERLINKGUARD runs on iPhone and iPad (Safari),
-            Android phones (Chrome), and laptops and desktops on Chrome or Edge for Windows, macOS
-            and Linux.
+            One app for the whole team — FIBERLINKGUARD installs on iPhone and iPad (Safari),
+            Android phones and tablets (Chrome), and laptops and desktops on Chrome or Edge for
+            Windows, macOS and Linux.
           </p>
           <div className="landing-platforms">
             <span>iPhone</span>

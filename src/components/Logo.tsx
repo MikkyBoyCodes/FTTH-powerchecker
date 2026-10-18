@@ -1,4 +1,4 @@
-import logoImage from '../assets/flg-logo.jpeg';
+import logoImage from '../assets/flg-logo.png';
 
 type LogoProps = {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
