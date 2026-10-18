@@ -7,15 +7,16 @@ import {
   Bluetooth,
   Building2,
   Check,
+  Cpu,
   Gauge,
   History,
   Map,
   RadioTower,
-  ShieldCheck,
   SignalLow,
   Smartphone,
   Timer,
   Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import type { Reading, View } from '../types';
 
@@ -23,12 +24,22 @@ type Props = {
   readings: Reading[];
   online: boolean;
   installed: boolean;
-  onNavigate: (view: View) => void;
+  device: 'mobile' | 'desktop';
+  onNavigate: (view: View, mode?: 'manual' | 'bluetooth') => void;
   onInstall: () => void;
   onToast: (message: string) => void;
 };
 
-const tools = [
+type Tool = {
+  id: View;
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  link: string;
+  mode?: 'manual' | 'bluetooth';
+};
+
+const tools: Tool[] = [
   {
     id: 'power' as View,
     icon: Gauge,
@@ -56,6 +67,7 @@ const tools = [
     title: 'Bluetooth smart test',
     desc: 'Type a reading or capture live dBm from a meter over Bluetooth.',
     link: 'Open power checker',
+    mode: 'bluetooth',
   },
   {
     id: 'inventory' as View,
@@ -108,7 +120,9 @@ const tools = [
   },
 ];
 
-const OverviewPage = ({ readings, online, installed, onNavigate, onInstall, onToast }: Props) => {
+const OverviewPage = ({ readings, online, installed, device, onNavigate, onInstall, onToast }: Props) => {
+  const installedHere = device === 'mobile' ? 'this phone' : 'this system';
+  const installElsewhere = device === 'mobile' ? 'your computer' : 'your phone';
   return (
     <div className="page-stack">
       <section className="welcome-row">
@@ -144,18 +158,24 @@ const OverviewPage = ({ readings, online, installed, onNavigate, onInstall, onTo
         </div>
         <div className="pwa-status-copy">
           <strong>
-            {installed ? 'FIBERLINKGUARD is installed' : 'Take FIBERLINKGUARD with you'}
+            {installed
+              ? `FIBERLINKGUARD is installed on ${installedHere}`
+              : 'Take FIBERLINKGUARD with you'}
           </strong>
           <span>
-            {online
-              ? 'Install it on your phone for an app-like, full-screen experience.'
-              : 'You are offline. Core tools and saved readings remain available after first load.'}
+            {installed
+              ? `You can also install it on ${installElsewhere} — open the web version there and tap Download App.`
+              : online
+                ? 'Install it on your phone for an app-like, full-screen experience.'
+                : 'You are offline. Core tools and saved readings remain available after first load.'}
           </span>
         </div>
-        <button className="pwa-action-button" onClick={onInstall}>
-          {installed ? <Check size={15} /> : <Smartphone size={15} />}
-          {installed ? 'Installed' : 'Install app'}
-        </button>
+        {!installed && (
+          <button className="pwa-action-button" onClick={onInstall}>
+            <Smartphone size={15} />
+            Install app
+          </button>
+        )}
       </section>
 
       <section className="hero-card">
@@ -177,7 +197,7 @@ const OverviewPage = ({ readings, online, installed, onNavigate, onInstall, onTo
             Start a power check <ArrowRight size={17} />
           </button>
           <div className="hero-note">
-            <ShieldCheck size={14} /> Runs locally · No meter connection required
+            <Cpu size={14} /> Runs locally · No meter connection required
           </div>
         </div>
         <div className="hero-visual" aria-hidden="true">
@@ -215,8 +235,8 @@ const OverviewPage = ({ readings, online, installed, onNavigate, onInstall, onTo
       </section>
 
       <section className="tool-grid">
-        {tools.map(({ id, icon: Icon, title, desc, link }) => (
-          <button key={id} className="tool-card" onClick={() => onNavigate(id)}>
+        {tools.map(({ id, icon: Icon, title, desc, link, mode }) => (
+          <button key={id} className="tool-card" onClick={() => onNavigate(id, mode)}>
             <div className="tool-icon icon-blue">
               <Icon size={21} />
             </div>
@@ -293,9 +313,14 @@ const OverviewPage = ({ readings, online, installed, onNavigate, onInstall, onTo
               All tools run on your device. Once the app is loaded you can keep checking, logging
               and locating faults with no connection.
             </p>
-            <button className="text-button" onClick={() => onToast('Install FIBERLINKGUARD for a full-screen, offline field experience.')}>
-              Install for offline use <ArrowRight size={14} />
-            </button>
+            {!installed && (
+              <button
+                className="text-button"
+                onClick={() => onToast('Install FIBERLINKGUARD for a full-screen, offline field experience.')}
+              >
+                Install for offline use <ArrowRight size={14} />
+              </button>
+            )}
           </div>
         </div>
       </section>

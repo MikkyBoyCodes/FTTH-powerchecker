@@ -1,26 +1,16 @@
-import { ArrowDownToLine, Download, ShieldCheck, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-};
+import { ArrowDownToLine, Check, Download, WifiOff, Zap } from 'lucide-react';
+import Logo from '../components/Logo';
 
 type Props = {
   onEnterApp: () => void;
   onInstall: () => Promise<void>;
-  installPrompt: InstallPromptEvent | null;
   installed: boolean;
   standalone: boolean;
 };
 
-export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, standalone }: Props) => {
-  const [canInstall, setCanInstall] = useState(false);
+export const LandingPage = ({ onEnterApp, onInstall, installed, standalone }: Props) => {
   const isStandalone = installed || standalone;
-
-  useEffect(() => {
-    setCanInstall(Boolean(installPrompt));
-  }, [installPrompt]);
+  const alreadyInstalled = installed && !standalone;
 
   const handleInstall = async () => {
     await onInstall();
@@ -35,7 +25,7 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
       <header className="landing-header">
         <div className="landing-brand">
           <div className="landing-brand-symbol">
-            <ShieldCheck size={28} />
+            <Logo size="md" alt="" />
           </div>
           <div className="landing-brand-text">
             FIBER<span>LINKGUARD</span>
@@ -46,8 +36,8 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
           <button className="landing-secondary-btn" onClick={handleEnter}>Open App</button>
           {!isStandalone && (
             <button className="landing-primary-btn" onClick={handleInstall}>
-              <Download size={18} />
-              Download App
+              {alreadyInstalled ? <Check size={18} /> : <Download size={18} />}
+              {alreadyInstalled ? 'Already installed' : 'Download App'}
             </button>
           )}
         </div>
@@ -71,8 +61,8 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
             <div className="landing-cta-group">
               {!isStandalone && (
                 <button className="landing-primary-btn large" onClick={handleInstall}>
-                  <ArrowDownToLine size={20} />
-                  Download for your device
+                  {alreadyInstalled ? <Check size={20} /> : <ArrowDownToLine size={20} />}
+                  {alreadyInstalled ? 'Already installed on this device' : 'Download for your device'}
                 </button>
               )}
               <button className="landing-secondary-btn large" onClick={handleEnter}>
@@ -80,14 +70,15 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
                 Open full app
               </button>
             </div>
-            {!isStandalone && !canInstall && (
+            {alreadyInstalled && (
               <p className="landing-install-hint">
-                No one-tap install here — on iPhone or iPad, tap Share → Add to Home Screen.
+                FIBERLINKGUARD is already installed on this device. Open it from your apps or Start
+                menu — you don’t need to download it again.
               </p>
             )}
             <div className="landing-benefits">
               <div className="landing-benefit">
-                <ShieldCheck size={16} />
+                <WifiOff size={16} />
                 <span>Works offline after first load</span>
               </div>
               <div className="landing-benefit">
@@ -105,7 +96,7 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
             <div className="landing-ring ring-2" />
             <div className="landing-ring ring-3" />
             <div className="landing-core">
-              <ShieldCheck size={48} />
+              <Logo size="xl" full alt="" />
             </div>
           </div>
         </section>
@@ -133,32 +124,19 @@ export const LandingPage = ({ onEnterApp, onInstall, installPrompt, installed, s
         </section>
 
         <section className="landing-install">
-          <h2 className="landing-section-title">Download & Install</h2>
-          <div className="landing-install-grid">
-            <div className="landing-install-card">
-              <h3>iOS (Safari)</h3>
-              <ol>
-                <li>Open this link in Safari</li>
-                <li>Tap Share → Add to Home Screen</li>
-                <li>Tap Add</li>
-              </ol>
-            </div>
-            <div className="landing-install-card">
-              <h3>Android (Chrome)</h3>
-              <ol>
-                <li>Open this link in Chrome</li>
-                <li>Tap ⋮ → Install app / Add to Home screen</li>
-                <li>Confirm the prompt</li>
-              </ol>
-            </div>
-            <div className="landing-install-card">
-              <h3>Desktop (Chrome/Edge)</h3>
-              <ol>
-                <li>Open in Chrome or Edge</li>
-                <li>Look for Install icon in address bar</li>
-                <li>Or use the Download button above</li>
-              </ol>
-            </div>
+          <h2 className="landing-section-title">Works on every device</h2>
+          <p className="landing-install-note">
+            One download for the whole team — FIBERLINKGUARD runs on iPhone and iPad (Safari),
+            Android phones (Chrome), and laptops and desktops on Chrome or Edge for Windows, macOS
+            and Linux.
+          </p>
+          <div className="landing-platforms">
+            <span>iPhone</span>
+            <span>iPad</span>
+            <span>Android</span>
+            <span>Windows</span>
+            <span>macOS</span>
+            <span>Linux</span>
           </div>
         </section>
       </main>

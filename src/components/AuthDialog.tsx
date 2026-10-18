@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { ShieldCheck, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import Logo from './Logo';
 import { useAuth } from '../lib/auth';
 import { isSupabaseConfigured } from '../lib/supabase';
 
@@ -70,7 +71,7 @@ const AuthDialog = ({ onClose, onToast }: Props) => {
         </button>
 
         <div className="install-guide-symbol">
-          <ShieldCheck size={25} />
+          <Logo size="md" alt="" />
         </div>
         <p className="eyebrow">FIBERLINKGUARD / ACCOUNT</p>
         <h2 id="auth-title">{mode === 'signin' ? 'Sign in to post jobs' : 'Create an account'}</h2>

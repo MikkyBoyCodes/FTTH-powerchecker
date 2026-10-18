@@ -8,6 +8,7 @@ import {
   CloudOff,
   Download,
   Gauge,
+  Globe,
   History,
   House,
   Map,
@@ -16,9 +17,7 @@ import {
   Search,
   Settings2,
   Shield,
-  ShieldCheck,
   SignalLow,
-  Smartphone,
   Timer,
   Wifi,
   X,
@@ -26,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import Brand from './components/Brand';
+import Logo from './components/Logo';
 import AuthDialog from './components/AuthDialog';
 import { useAuth } from './lib/auth';
 import LandingPage from './pages/LandingPage';
@@ -50,6 +50,14 @@ type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 };
+
+type RelatedAppsNavigator = Navigator & {
+  getInstalledRelatedApps?: () => Promise<Array<{ platform: string }>>;
+};
+
+const isStandaloneMode = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
 const DB = 'fiberlinkguard-local-v2';
 const STORE = 'readings';
@@ -127,10 +135,13 @@ const navItems: NavItem[] = [
 ];
 
 const App = () => {
-  const [showLanding, setShowLanding] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const launchedStandalone = isStandaloneMode();
+  const isMobileDevice = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+  const [showLanding, setShowLanding] = useState(!launchedStandalone);
+  const [loading, setLoading] = useState(launchedStandalone);
   const [loadingStep, setLoadingStep] = useState(0);
   const [view, setView] = useState<View>('overview');
+  const [powerMode, setPowerMode] = useState<'manual' | 'bluetooth'>('manual');
   const [mobileMenu, setMobileMenu] = useState(false);
   const [powerInput, setPowerInput] = useState('-18.4');
   const [lowLimit, setLowLimit] = useState('-27');
@@ -144,10 +155,7 @@ const App = () => {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
-  const [standalone, setStandalone] = useState(
-    window.matchMedia('(display-mode: standalone)').matches
-  );
-  const [installGuideOpen, setInstallGuideOpen] = useState(false);
+  const [standalone, setStandalone] = useState(isStandaloneMode);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
@@ -160,6 +168,16 @@ const App = () => {
   });
 
   useEffect(() => {
+    const nav = window.navigator as RelatedAppsNavigator;
+    nav
+      .getInstalledRelatedApps?.()
+      .then((apps) => {
+        if (apps.some((a) => a.platform === 'webapp')) setInstalled(true);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const on = () => setOnline(true);
     const off = () => setOnline(false);
     const before = (e: Event) => {
@@ -168,21 +186,35 @@ const App = () => {
     };
     const done = () => {
       setInstalled(true);
-      setStandalone(true);
       setInstallPrompt(null);
+      setStandalone(isStandaloneMode());
       setToast('FIBERLINKGUARD has been installed.');
     };
+    const mode = window.matchMedia('(display-mode: standalone)');
+    const onMode = () => setStandalone(mode.matches);
     window.addEventListener('online', on);
     window.addEventListener('offline', off);
     window.addEventListener('beforeinstallprompt', before);
     window.addEventListener('appinstalled', done);
+    mode.addEventListener('change', onMode);
     return () => {
       window.removeEventListener('online', on);
       window.removeEventListener('offline', off);
       window.removeEventListener('beforeinstallprompt', before);
       window.removeEventListener('appinstalled', done);
+      mode.removeEventListener('change', onMode);
     };
   }, []);
+
+  useEffect(() => {
+    if (launchedStandalone) return;
+    const onPop = () => {
+      setShowLanding(true);
+      setMobileMenu(false);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [launchedStandalone]);
 
   useEffect(() => {
     let active = true;
@@ -228,43 +260,60 @@ const App = () => {
     ];
     setLoadingStep(0);
     const timers = [
-      window.setTimeout(() => setLoadingStep(1), 700),
-      window.setTimeout(() => setLoadingStep(2), 1500),
-      window.setTimeout(() => setLoadingStep(3), 2300),
-      window.setTimeout(() => setLoading(false), 2900),
+      window.setTimeout(() => setLoadingStep(1), 1200),
+      window.setTimeout(() => setLoadingStep(2), 2600),
+      window.setTimeout(() => setLoadingStep(3), 4000),
+      window.setTimeout(() => setLoading(false), 5000),
     ];
     void messages;
     return () => timers.forEach((t) => window.clearTimeout(t));
   }, [loading]);
 
-  const go = (next: View) => {
+  const go = (next: View, mode?: 'manual' | 'bluetooth') => {
+    if (next === 'power') setPowerMode(mode ?? 'manual');
     setView(next);
     setMobileMenu(false);
   };
 
   const enterApp = useCallback(() => {
+    if (!launchedStandalone) {
+      window.history.pushState({ flg: 'app' }, '');
+    }
     setShowLanding(false);
     setLoading(true);
     setView('overview');
-  }, []);
+  }, [launchedStandalone]);
 
   const installApp = async () => {
     if (standalone || installed) {
-      setToast('FIBERLINKGUARD is already running as an installed app.');
+      setToast(
+        'FIBERLINKGUARD is already installed on this device — open it from your apps or Start menu.'
+      );
       return;
     }
     if (!installPrompt) {
-      setInstallGuideOpen(true);
+      setToast(
+        'Your browser controls install. Click the install icon in the address bar, or open the menu and choose Install app.'
+      );
       return;
     }
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    setToast(
-      choice.outcome === 'accepted'
-        ? 'Installation accepted.'
-        : 'Installation cancelled; you can install FIBERLINKGUARD later.'
-    );
-    setInstallPrompt(null);
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setInstalled(true);
+        setToast('Installation accepted. FIBERLINKGUARD is installed.');
+      } else {
+        setToast('Installation cancelled; you can install FIBERLINKGUARD later.');
+      }
+    } catch {
+      setToast(
+        'Your browser controls install. Click the install icon in the address bar, or open the menu and choose Install app.'
+      );
+      return;
+    } finally {
+      setInstallPrompt(null);
+    }
   };
 
   const saveReading = () => {
@@ -316,28 +365,38 @@ const App = () => {
       .catch(() => setToast('Could not sign out. Try again.'));
   };
 
-  const isAppleMobile =
-    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
   const loadingMessages = ['Starting workspace…', 'Loading field tools…', 'Restoring local records…', 'Ready'];
+
+  const toastEl = toast ? (
+        <div className="toast-message" role="status">
+          <Logo size="xs" alt="" />
+          {toast}
+          <button className="toast-close" onClick={() => setToast('')} aria-label="Dismiss message">
+            <X size={15} />
+          </button>
+        </div>
+  ) : null;
 
   if (showLanding) {
     return (
-      <LandingPage
-        onEnterApp={enterApp}
-        onInstall={installApp}
-        installPrompt={installPrompt}
-        installed={installed}
-        standalone={standalone}
-      />
+      <>
+        <LandingPage
+          onEnterApp={enterApp}
+          onInstall={installApp}
+          installed={installed}
+          standalone={standalone}
+        />
+        {toastEl}
+      </>
     );
   }
 
   if (loading) {
     return (
       <div className="loading-screen" role="status" aria-label="Loading FIBERLINKGUARD">
-        <div className="loading-spinner" />
+        <div className="loading-logo">
+          <Logo size="xl" alt="" />
+        </div>
         <div className="loading-wordmark">
           FIBER<span>LINKGUARD</span>
         </div>
@@ -394,6 +453,12 @@ const App = () => {
             <MoreHorizontal size={19} />
           </button>
         </div>
+        {!standalone && (
+          <button type="button" className="landing-return" onClick={() => setShowLanding(true)}>
+            <Globe size={17} strokeWidth={1.8} />
+            <span>Back to landing page</span>
+          </button>
+        )}
         <div className="sidebar-footer">
           FIBERLINKGUARD <span>•</span> F.L.G
         </div>
@@ -422,12 +487,12 @@ const App = () => {
               <span className={online ? 'online-dot' : 'offline-dot'} />
               <span>{online ? 'Online ready' : 'Offline mode'}</span>
             </div>
-            <button className="install-app-button" onClick={installApp}>
-              <Download size={15} />
-              <span>
-                {installed || standalone ? 'Installed' : installPrompt ? 'Install app' : 'Install options'}
-              </span>
-            </button>
+            {!(installed || standalone) && (
+              <button className="install-app-button" onClick={installApp}>
+                <Download size={15} />
+                <span>{installPrompt ? 'Install app' : 'Install options'}</span>
+              </button>
+            )}
             <button
               className="icon-button"
               aria-label="Search saved readings"
@@ -445,6 +510,16 @@ const App = () => {
             >
               <Settings2 size={18} />
             </button>
+            {!standalone && (
+              <button
+                className="icon-button"
+                aria-label="Back to landing page"
+                title="Back to landing page"
+                onClick={() => setShowLanding(true)}
+              >
+                <Globe size={18} />
+              </button>
+            )}
             <button
               className="top-account"
               aria-label={user ? 'Sign out' : 'Sign in'}
@@ -463,6 +538,7 @@ const App = () => {
               readings={readings}
               online={online}
               installed={installed || standalone}
+              device={isMobileDevice ? 'mobile' : 'desktop'}
               onNavigate={go}
               onInstall={installApp}
               onToast={onToast}
@@ -470,6 +546,7 @@ const App = () => {
           )}
           {view === 'power' && (
             <PowerPage
+              initialMode={powerMode}
               powerInput={powerInput}
               setPowerInput={setPowerInput}
               lowLimit={lowLimit}
@@ -523,15 +600,7 @@ const App = () => {
         </footer>
       </main>
 
-      {toast && (
-        <div className="toast-message" role="status">
-          <ShieldCheck size={17} />
-          {toast}
-          <button className="toast-close" onClick={() => setToast('')} aria-label="Dismiss message">
-            <X size={15} />
-          </button>
-        </div>
-      )}
+      {toastEl}
 
       {needRefresh && (
         <div className="update-banner" role="status">
@@ -539,80 +608,6 @@ const App = () => {
           <button className="secondary-button" onClick={() => updateServiceWorker(true)}>
             Update now
           </button>
-        </div>
-      )}
-
-      {installGuideOpen && (
-        <div
-          className="install-guide-backdrop"
-          role="presentation"
-          onClick={() => setInstallGuideOpen(false)}
-        >
-          <section
-            className="install-guide-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="install-guide-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="install-guide-close icon-button"
-              aria-label="Close install instructions"
-              onClick={() => setInstallGuideOpen(false)}
-            >
-              <X size={18} />
-            </button>
-            <div className="install-guide-symbol">
-              <Smartphone size={25} />
-            </div>
-            <p className="eyebrow">FIBERLINKGUARD / INSTALLATION</p>
-            <h2 id="install-guide-title">Add FIBERLINKGUARD to your phone</h2>
-            {isAppleMobile ? (
-              <div className="install-steps">
-                <p>
-                  <strong>On iPhone or iPad</strong>
-                </p>
-                <ol>
-                  <li>
-                    Open this deployed link in <strong>Safari</strong>.
-                  </li>
-                  <li>
-                    Tap the <strong>Share</strong> icon.
-                  </li>
-                  <li>
-                    Choose <strong>Add to Home Screen</strong>.
-                  </li>
-                  <li>
-                    Tap <strong>Add</strong> to finish.
-                  </li>
-                </ol>
-              </div>
-            ) : (
-              <div className="install-steps">
-                <p>
-                  <strong>On Android</strong>
-                </p>
-                <ol>
-                  <li>
-                    Open this deployed HTTPS link in <strong>Chrome</strong>.
-                  </li>
-                  <li>
-                    Tap the browser&apos;s <strong>⋮ menu</strong>.
-                  </li>
-                  <li>
-                    Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.
-                  </li>
-                  <li>Confirm the prompt.</li>
-                </ol>
-              </div>
-            )}
-            <button
-              className="primary-button full-button"
-              onClick={() => setInstallGuideOpen(false)}
-            >
-              Got it
-            </button>
-          </section>
         </div>
       )}
 
@@ -633,7 +628,7 @@ const App = () => {
               <X size={18} />
             </button>
             <div className="install-guide-symbol">
-              <ShieldCheck size={25} />
+              <Logo size="md" alt="" />
             </div>
             <p className="eyebrow">ABOUT FIBERLINKGUARD</p>
             <h2 id="about-title">F.L.G — FTTH Operations Platform</h2>

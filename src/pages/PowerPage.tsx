@@ -1,6 +1,7 @@
 import {
   Activity,
   AlertTriangle,
+  ArrowDown,
   Bluetooth,
   Cable,
   CheckCircle2,
@@ -17,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ToastFn } from '../types';
 
 type Props = {
+  initialMode?: Mode;
   powerInput: string;
   setPowerInput: (v: string) => void;
   lowLimit: string;
@@ -44,7 +46,7 @@ const parseDbm = (raw: string): number | null => {
 };
 
 const PowerPage = (p: Props) => {
-  const [mode, setMode] = useState<Mode>('manual');
+  const [mode, setMode] = useState<Mode>(p.initialMode ?? 'manual');
   const [btSupported, setBtSupported] = useState(false);
   const [btConnected, setBtConnected] = useState<DeviceInfo | null>(null);
   const [btConnecting, setBtConnecting] = useState(false);
@@ -52,6 +54,15 @@ const PowerPage = (p: Props) => {
   const [btRaw, setBtRaw] = useState('');
   const [wavelength, setWavelength] = useState('1490');
   const deviceRef = useRef<BluetoothDevice | null>(null);
+  const resultRef = useRef<HTMLElement | null>(null);
+
+  const scrollToResult = useCallback(() => {
+    if (!window.matchMedia('(max-width: 900px)').matches) return;
+    const el = resultRef.current;
+    if (!el) return;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.6) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   useEffect(() => {
     setBtSupported(typeof navigator !== 'undefined' && 'bluetooth' in navigator);
@@ -168,6 +179,12 @@ const PowerPage = (p: Props) => {
 
   const ResultIcon = resultCopy.icon;
 
+  useEffect(() => {
+    if (mode !== 'bluetooth' || btLive === null) return;
+    const timer = window.setTimeout(scrollToResult, 500);
+    return () => window.clearTimeout(timer);
+  }, [btLive, mode, scrollToResult]);
+
   return (
     <div className="page-stack">
       <PageTitle
@@ -233,6 +250,15 @@ const PowerPage = (p: Props) => {
                     className="text-input number-input"
                     value={p.powerInput}
                     onChange={(e) => p.setPowerInput(e.target.value)}
+                    onBlur={() => {
+                      if (validValue && validLimits) scrollToResult();
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && validValue && validLimits) {
+                        scrollToResult();
+                        e.currentTarget.blur();
+                      }
+                    }}
                     placeholder="-18.4"
                     aria-describedby="reading-help"
                   />
@@ -241,6 +267,9 @@ const PowerPage = (p: Props) => {
                 <p className="field-help" id="reading-help">
                   Include the minus sign. For example, −18.4 dBm.
                 </p>
+                <button type="button" className="reading-jump-button" onClick={scrollToResult}>
+                  Show my reading <ArrowDown size={15} />
+                </button>
               </div>
             ) : (
               <div className="bt-panel">
@@ -391,7 +420,7 @@ const PowerPage = (p: Props) => {
         </div>
 
         <div className="power-col">
-          <section className="panel power-card power-result-card">
+          <section className="panel power-card power-result-card" ref={resultRef}>
             <div className="panel-heading">
               <div>
                 <h3>Signal interpretation</h3>
