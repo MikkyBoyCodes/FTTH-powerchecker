@@ -185,7 +185,7 @@ const PowerPage = (p: Props) => {
             className={`power-toggle-btn ${mode === 'manual' ? 'is-active' : ''}`}
             onClick={() => setMode('manual')}
           >
-            <Keyboard size={16} /> Type reading
+            <Keyboard size={16} /> Type readings
           </button>
           <button
             type="button"
@@ -194,7 +194,7 @@ const PowerPage = (p: Props) => {
             className={`power-toggle-btn ${mode === 'bluetooth' ? 'is-active' : ''}`}
             onClick={() => setMode('bluetooth')}
           >
-            <Bluetooth size={16} /> Bluetooth meter
+            <Bluetooth size={16} /> Use Bluetooth
           </button>
         </div>
         <span className="power-mode-note">

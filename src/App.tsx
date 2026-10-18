@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import Brand from './components/Brand';
+import AuthDialog from './components/AuthDialog';
+import { useAuth } from './lib/auth';
 import LandingPage from './pages/LandingPage';
 import OverviewPage from './pages/OverviewPage';
 import PowerPage from './pages/PowerPage';
@@ -147,6 +149,9 @@ const App = () => {
   );
   const [installGuideOpen, setInstallGuideOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const { user, signOut } = useAuth();
 
   const { needRefresh: [needRefresh], updateServiceWorker } = useRegisterSW({
     onRegisteredSW(_url, registration) {
@@ -298,6 +303,19 @@ const App = () => {
   };
 
   const onToast = useCallback((message: string) => setToast(message), []);
+
+  const userInitials = user ? (user.email?.charAt(0).toUpperCase() ?? 'U') : 'FT';
+
+  const handleAccountClick = () => {
+    if (!user) {
+      setAuthOpen(true);
+      return;
+    }
+    void signOut()
+      .then(() => setToast('Signed out.'))
+      .catch(() => setToast('Could not sign out. Try again.'));
+  };
+
   const isAppleMobile =
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -363,15 +381,15 @@ const App = () => {
           <span className="status-dot" />
         </div>
         <div className="profile-row">
-          <div className="avatar">FT</div>
+          <div className="avatar">{userInitials}</div>
           <div className="profile-copy">
-            <strong>Field technician</strong>
-            <span>Local workspace</span>
+            <strong>{user ? user.email : 'Field technician'}</strong>
+            <span>{user ? 'Signed in' : 'Local workspace'}</span>
           </div>
           <button
             className="icon-button"
-            aria-label="Profile options"
-            onClick={() => onToast('Account features are local-only on this device.')}
+            aria-label={user ? 'Sign out' : 'Sign in'}
+            onClick={handleAccountClick}
           >
             <MoreHorizontal size={19} />
           </button>
@@ -420,10 +438,22 @@ const App = () => {
             >
               <Search size={18} />
             </button>
-            <button className="icon-button" aria-label="Settings" onClick={() => go('settings')}>
+            <button
+              className="icon-button"
+              aria-label="Settings"
+              onClick={() => go('settings')}
+            >
               <Settings2 size={18} />
             </button>
-            <div className="top-avatar">FT</div>
+            <button
+              className="top-account"
+              aria-label={user ? 'Sign out' : 'Sign in'}
+              title={user ? 'Sign out' : 'Sign in'}
+              onClick={handleAccountClick}
+            >
+              <span className="top-avatar">{userInitials}</span>
+              {!user && <span className="top-account-label">Sign in</span>}
+            </button>
           </div>
         </header>
 
@@ -462,7 +492,7 @@ const App = () => {
           )}
           {view === 'converter' && <ConverterPage />}
           {view === 'fault' && <FaultPage />}
-          {view === 'inventory' && <InventoryPage />}
+          {view === 'inventory' && <InventoryPage onToast={onToast} />}
           {view === 'provisioning' && <ProvisioningPage onToast={onToast} />}
           {view === 'splicing' && <SpliceQcPage />}
           {view === 'stock' && <StockPage />}
@@ -477,7 +507,7 @@ const App = () => {
               onStart={() => go('power')}
             />
           )}
-          {view === 'jobs' && <JobsPage onToast={onToast} />}
+          {view === 'jobs' && <JobsPage onToast={onToast} onSignIn={() => setAuthOpen(true)} />}
           {view === 'settings' && (
             <SettingsPage onClear={clearReadings} onAbout={() => setAboutOpen(true)} />
           )}
@@ -624,6 +654,8 @@ const App = () => {
           </section>
         </div>
       )}
+
+      {authOpen && <AuthDialog onClose={() => setAuthOpen(false)} onToast={onToast} />}
     </div>
   );
 };

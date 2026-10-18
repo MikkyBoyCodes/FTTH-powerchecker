@@ -11,7 +11,7 @@ The app opens on a landing page with a download call-to-action. The full workspa
 - **Power check:** type a received dBm reading or capture it live over Bluetooth, then get an immediate plain-language interpretation. Save results to local history.
 - **Unit converter:** dBm → watts (with formula) and kilometres ↔ metres (with formulas).
 - **Fault locator:** enter power, LOS status and test point to isolate a break without climbing twice.
-- **Inventory & GIS:** digital as-built for poles, joint boxes, splitters, OLTs and customers, with search, filtering and GPS tagging.
+- **Inventory & GIS:** digital as-built for poles, joint boxes, splitters, OLTs and customers, with search, filtering, real browser GPS capture and a live coordinate map of every asset.
 - **One-click provisioning:** activate a new subscriber in a single guided flow — port selection, ONT registration, VLAN assignment and verification.
 - **Splicing QC:** document every splice with a photo and a measured loss; anything above threshold is flagged for a redo.
 - **Stock & materials:** track cable in metres, sleeves, ONTs and patch cords; jobs deduct stock automatically.
@@ -19,7 +19,7 @@ The app opens on a landing page with a download call-to-action. The full workspa
 - **MTTR:** open and resolve fault tickets and measure mean time to repair.
 - **Monitoring:** live signal levels across the OLT and splitters.
 - **Reading history:** persistent local records in IndexedDB, available after refresh and offline; clear history.
-- **Job listings:** searchable fibre installation and field-service opportunities from network partners.
+- **Job listings:** a community board of fibre installation and field-service roles. Anyone can browse and filter listings; signed-in users can post, edit and remove their own listings.
 - **Settings:** about, data management and field-feature notes.
 
 ## Tech and code organisation
@@ -66,6 +66,32 @@ The initial illustrative GPON B+ range is **−27 dBm to −8 dBm**, reflecting 
 - **Android:** open the HTTPS URL in Chrome, then use Install app / Add to Home screen. If the native prompt is available, the in-app button opens it.
 - **iPhone/iPad:** open the HTTPS URL in Safari → Share → Add to Home Screen → Add. iOS does not generally expose the same web `beforeinstallprompt` event, so manual steps are required.
 
+## Backend — Supabase (accounts + job listings)
+
+The core field tools are fully local and work with no backend. The **Job listings** module can optionally connect to a [Supabase](https://supabase.com) (Postgres) backend so users can create real accounts and post jobs. If Supabase is not configured, the app falls back to sample listings and still works offline.
+
+Why Supabase: it includes **Postgres + authentication + row-level security** in one project, with a generous free tier (500 MB database, 1 GB file storage, 50k monthly users). This beats MongoDB Atlas M0 (512 MB) on both space and price, and — the key point — Atlas does **not** include user accounts, which you would have to build yourself.
+
+### Setup (one time)
+
+1. Create a free project at [supabase.com](https://supabase.com) (Dashboard → New project).
+2. In the dashboard open **SQL Editor → New query**, paste the contents of `supabase/schema.sql`, and run it. This creates the `jobs` table with row-level security: everyone can read listings, but only a signed-in owner can create, edit or delete their own.
+3. Copy `.env.example` to `.env` and fill in your project values from **Project Settings → API**:
+
+   ```
+   VITE_SUPABASE_URL=https://<your-ref>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<your anon/public key>
+   ```
+
+   The `anon` key is safe to ship to the browser — the security lives in the row-level policies in `schema.sql`.
+4. Restart the dev server (`npm run dev`).
+
+By default Supabase sends a confirmation email on sign-up. If you prefer instant sign-in during testing, disable it in **Authentication → Providers → Email → Confirm email**.
+
+### Deploying to Vercel
+
+Set the same two environment variables in **Vercel → Project → Settings → Environment Variables** before building, then deploy.
+
 ## Deploy to Vercel
 
 1. Push this project to a GitHub repository.
@@ -77,4 +103,4 @@ The initial illustrative GPON B+ range is **−27 dBm to −8 dBm**, reflecting 
 
 ## Scope and honest limitations
 
-This is a front-end application: no accounts, cloud sync, live vacancy database, real job application workflow or automatic physical fibre diagnosis. The threshold profile and job listings need confirmation before operational use. The app interprets values entered from physical meters; it does not measure light by itself. Bluetooth integration depends on the browser (Web Bluetooth works in Chrome/Edge, not iOS Safari).
+This is a field toolkit, not a measurement device or an operational guarantee. The app interprets values entered from physical meters; it does not measure light by itself. Bluetooth integration depends on the browser (Web Bluetooth works in Chrome/Edge, not iOS Safari). GPS capture and the job board require the browser's location/network permissions and, when connected, a live Supabase backend. The threshold profile and any job listings need confirmation before operational use.

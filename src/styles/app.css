@@ -2528,9 +2528,9 @@ button:disabled {
   align-self: start;
 }
 .main-reading-input .text-input {
-  font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 800;
-  letter-spacing: -0.7px;
+  font-size: clamp(16px, 1.5vw, 19px);
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
 .profile-select {
   appearance: auto;
@@ -2742,7 +2742,7 @@ button:disabled {
     font-size: 11px;
   }
   .main-reading-input .text-input {
-    font-size: 23px;
+    font-size: 17px;
   }
 }
 
@@ -3559,5 +3559,372 @@ button:disabled {
   }
   .power-card {
     padding: 16px;
+  }
+}
+
+/* ===== FIBERLINKGUARD — Inventory & GIS ===== */
+.gis-map-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gis-map {
+  display: block;
+  width: 100%;
+  aspect-ratio: 100 / 66;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 50% 45%, #16304a4d, transparent 72%), #0b1220;
+  cursor: crosshair;
+}
+.gis-point {
+  cursor: pointer;
+}
+.gis-dot {
+  transition: 0.18s;
+}
+.gis-dot-pole {
+  fill: #8fd0f0;
+}
+.gis-dot-joint {
+  fill: var(--sky);
+}
+.gis-dot-splitter {
+  fill: #72b9ff;
+}
+.gis-dot-olt {
+  fill: var(--gold);
+}
+.gis-dot-customer {
+  fill: var(--gold-soft);
+}
+.gis-halo {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 0.4;
+  opacity: 0;
+  transition: 0.18s;
+}
+.gis-point:hover .gis-dot,
+.gis-point.is-selected .gis-dot {
+  r: 2.3;
+}
+.gis-point:hover .gis-halo,
+.gis-point.is-selected .gis-halo {
+  opacity: 1;
+}
+.gis-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+.gis-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: #8aa0bc;
+  font-weight: 600;
+}
+.gis-swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.gis-swatch.gis-dot-pole {
+  background: #8fd0f0;
+}
+.gis-swatch.gis-dot-joint {
+  background: var(--sky);
+}
+.gis-swatch.gis-dot-splitter {
+  background: #72b9ff;
+}
+.gis-swatch.gis-dot-olt {
+  background: var(--gold);
+}
+.gis-swatch.gis-dot-customer {
+  background: var(--gold-soft);
+}
+.gis-empty {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 36px 22px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  color: #8aa0bc;
+  background: #0b122066;
+}
+.gis-empty strong {
+  color: var(--text);
+  font-size: 13px;
+}
+.gis-empty span {
+  font-size: 11px;
+  max-width: 340px;
+  line-height: 1.7;
+}
+.gis-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #101c2e80;
+}
+.gis-selected-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gis-selected-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--gold-soft);
+  color: var(--gold);
+  flex: none;
+}
+.gis-selected-head strong {
+  display: block;
+  font-size: 12px;
+}
+.gis-selected-head span {
+  font-size: 10px;
+  color: #8aa0bc;
+}
+.gis-selected-coords {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 700;
+}
+.gis-capture-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.gis-coord-chip {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px dashed var(--border);
+  color: #6f8199;
+}
+.gis-coord-chip.has-coords {
+  border-style: solid;
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+.gis-coord-cell {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--sky);
+}
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  justify-content: flex-end;
+}
+.text-button.danger {
+  color: #e0716f;
+}
+.text-button.danger:hover {
+  color: #ff9d9b;
+}
+.text-button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== FIBERLINKGUARD — Accounts + Jobs backend (Supabase) ===== */
+.top-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: #101c2e80;
+  border-radius: 999px;
+  padding: 4px 12px 4px 4px;
+  cursor: pointer;
+  color: var(--text);
+  transition: 0.2s;
+}
+.top-account:hover {
+  border-color: var(--gold);
+}
+.top-account .top-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
+.top-account-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c7d4e6;
+}
+.jobs-filter {
+  min-width: 132px;
+}
+.jobs-account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: -6px;
+}
+.jobs-account-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sky);
+  background: #182e4380;
+  border: 1px solid #2a6b92;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.jobs-account-hint {
+  font-size: 11px;
+  color: #8aa0bc;
+}
+.jobs-empty {
+  text-align: center;
+  color: #8aa0bc;
+  padding: 40px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  font-size: 12px;
+}
+.job-owner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+.job-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* Auth dialog */
+.auth-dialog {
+  position: relative;
+  width: min(460px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  background: linear-gradient(180deg, #101c2e, #0b1220);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 30px 28px 26px;
+  animation: dialogIn 0.28s;
+}
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.auth-dialog h2 {
+  font: 700 20px var(--font-head);
+  margin: 8px 0 6px;
+}
+.auth-sub {
+  color: #8aa0bc;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0 0 18px;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-form .text-input {
+  width: 100%;
+}
+.auth-error {
+  color: #ff9d9b;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 0;
+}
+.auth-switch {
+  border: 0;
+  background: transparent;
+  color: var(--sky);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.auth-switch:hover {
+  color: #9fdcf7;
+}
+.auth-unconfigured {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #0b122066;
+}
+.auth-unconfigured strong {
+  color: var(--gold);
+  font-size: 13px;
+}
+.auth-unconfigured span {
+  color: #8aa0bc;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.auth-unconfigured code {
+  color: var(--sky);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+}
+
+/* Job post / edit form */
+.job-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+}
+.job-form-full {
+  display: grid;
+  gap: 8px;
+}
+.job-textarea {
+  resize: vertical;
+  min-height: 92px;
+  line-height: 1.6;
+}
+@media (max-width: 560px) {
+  .job-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .jobs-filter {
+    min-width: 0;
+    width: 100%;
   }
 }
